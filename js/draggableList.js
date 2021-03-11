@@ -6,26 +6,31 @@
  * LICENSE file in the root directory of this source tree.
  */
 import { html } from 'https://unpkg.com/lit-html/lit-html.js';
-import { repeat } from 'https://unpkg.com/lit-html/directives/repeat.js'
-import { classMap } from 'https://unpkg.com/lit-html/directives/class-map.js'
+import { repeat } from 'https://unpkg.com/lit-html/directives/repeat.js';
+import { classMap } from 'https://unpkg.com/lit-html/directives/class-map.js';
+import { useState } from 'https://unpkg.com/haunted/haunted.js';
 import useDraggable from './useDraggable.js';
 
 const DraggableList = ({ items, onChange }) => {
-  const onDrop = (fromIndex, toIndex) => {
-    onChange('move', fromIndex, toIndex);
+  const [drag, setDrag] = useState(null);
+  const onDrop = (from, to) => {
+    onChange('move', from, to);
+    setDrag(null);
   };
-  const [startDrag, didDrag, draggedIndex, hoverIndex] = useDraggable(onDrop);
-  const dragging = draggedIndex !== null;
-  const prioritizing = draggedIndex > hoverIndex;
+  const onDrag = (from, to) => {
+    console.log('onDrag', from, to);
+    setDrag({ from, to });
+  };
+  const [startDrag] = useDraggable(onDrop, onDrag);
   return html`
-    <div class='${classMap({'did-drag': didDrag})}'>
+    <div class='${classMap({ 'dragging': !!drag })}'>
       ${repeat(items, (i) => i.id, (i, index) => {
-
         const classes = {
-          nudged: dragging && hoverIndex !== null && index > hoverIndex - (prioritizing ? 1 : 0),
-          dragged: draggedIndex === index,
+          nudgedown: drag && index < drag.from && index >= drag.to,
+          nudgeup: drag && index > drag.from && index <= drag.to,
+          dragged:  drag && drag.from === index,
         }
-
+        console.log('dragging', drag);
         return html`
           <div
             class='item ${classMap(classes)}'

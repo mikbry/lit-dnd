@@ -5,7 +5,7 @@
  * This source code is licensed under the license found in the
  * LICENSE file in the root directory of this source tree.
  */
-import { useCallback, useState, useEffect } from 'https://unpkg.com/haunted/haunted.js';
+import { useState, useEffect } from 'https://unpkg.com/haunted/haunted.js';
 
 const moveEvent = 'mousemove';
 const upEvent = 'mouseup';
@@ -17,66 +17,70 @@ const setHoverIndex = (index) => {
   hoverIndex = index;
 };
 
-const useDraggable = (onDrop = () => { }) => {
-  const [didDrag, setDidDrag] = useState(false);
+const useDraggable = (onDrop = () => { }, onDrag = () => {}) => {
   const [dragged, setDragged] = useState(null);
 
-  const moveItem = (item, containerY, itemMouseOffset, pageY) => {
-    const itemAbsoluteTop = pageY - containerY;
-    const top = itemAbsoluteTop - itemMouseOffset;
-    item.style.top = `${top}px`;
+  const moveItem = ({ index, item, startY, containerY, itemMouseOffset }, pageY) => {
+    const transformY = pageY - startY;
+    item.style.transform = `translateY(${transformY}px)`;
 
-    let index = 0;
+    const absoluteY = pageY - containerY - itemMouseOffset;
+    let current = 0;
     let height = 0;
     const children = [...item.parentNode.children];
     children.find((child, ic) => {
       height += child.offsetHeight;
-      if (top < height - (child.offsetHeight / 2) || ic === children.length - 1) {
-        index = ic;
+      if (absoluteY < height - (child.offsetHeight / 2) || ic === children.length - 1) {
+        current = ic;
         return true;
       }
       return false;
     });
-    // const index = Math.max(Math.floor(itemAbsoluteTop / 48), 0);
-    setHoverIndex(index);
-    console.log('move Item', item.style.top, dragged, index, height);
+    if (hoverIndex !== current) {
+      setHoverIndex(current);
+      onDrag(index, hoverIndex);
+    }
   };
 
-  const onMoveListener = useCallback((event) => {
+  const onMoveListener = (event) => {
     if (dragged) {
-      const { item, containerY, itemMouseOffset } = dragged;
-      moveItem(item, containerY, itemMouseOffset, getPageY(event));
-      if (!didDrag) {
-        setDidDrag(true);
-      }
+      moveItem(dragged, getPageY(event));
     }
-  },[dragged, hoverIndex, didDrag]);
+  };
 
-  const onUpListener = useCallback(() => {
+  const onUpListener = () => {
     const { item, index } = dragged;
     console.log('stop drag', index, hoverIndex);
     setDragged(null);
-  }, [dragged, hoverIndex]);
+  };
 
   useEffect(() => {
     if (dragged) {
       console.log('dragged changed', dragged);
-      dragged.item.style.position = 'absolute';
       dragged.item.style.zIndex = 2;
       document.addEventListener(moveEvent, onMoveListener);
       dragged.item.addEventListener(upEvent, onUpListener);
     }
     
     return () => {
-      console.log('dragged remove', dragged, didDrag, hoverIndex);
+      console.log('dragged remove', dragged, hoverIndex);
       if (dragged) {
         const { item, index } = dragged;
         document.removeEventListener(moveEvent, onMoveListener);
         item.removeEventListener(upEvent, onUpListener);
-        onDrop(index, hoverIndex, didDrag);
-        item.removeAttribute('style');
-        setDidDrag(false);
-        setHoverIndex(null);
+
+        const onTransitionEnd = () => {
+          onDrop(index, hoverIndex);
+          setHoverIndex(null);
+          item.removeAttribute('style');
+          item.removeEventListener('transitionend', onTransitionEnd)
+        }
+        item.addEventListener('transitionend', onTransitionEnd)
+  
+        // TODO real calc
+        const finalTransformY = (hoverIndex - index) * 48
+        item.style.transition = 'transform 0.1s ease-out';
+        item.style.transform = `translate3d(0, ${finalTransformY}px, 0)`;
       }
     }
   }, [dragged]);
@@ -86,14 +90,16 @@ const useDraggable = (onDrop = () => { }) => {
     console.log('startDrag');
     const item = event.target;
     const parent = item.parentNode;
+    const startY = getPageY(event);
     const containerY = parent.getBoundingClientRect().top + window.scrollY;
     const itemMouseOffset = getClientY(event) - item.getBoundingClientRect().top;
     const index = Array.from(parent.children).indexOf(item);
-    setDragged({ index, item, containerY, itemMouseOffset });
-    moveItem(item, containerY, itemMouseOffset, getPageY(event));
+    const drag = { index, item, startY, containerY, itemMouseOffset };
+    setDragged(drag);
+    moveItem(drag, getPageY(event));
   };
 
-  return [startDrag, didDrag, dragged ? dragged.index : dragged, hoverIndex];
+  return [startDrag];
 };
 
 export default useDraggable;

@@ -53,13 +53,16 @@ const App = () => {
         background: white;
         font-family: sans-serif;
       }
-      .item.nudged:not(.dragged) {
+      .item.nudgedown:not(.dragged) {
         transform: translate3d(0, 48px, 0);
+      }
+      .item.nudgeup:not(.dragged) {
+        transform: translate3d(0, -48px, 0);
       }
       .item.dragged {
         box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
       }
-      .did-drag > .item {
+      .dragging > .item:not(.dragged) {
         transition: transform 0.2s ease-out;
       }
     </style>
