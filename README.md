@@ -4,7 +4,7 @@ Drag&amp;Drop test using lit-html and haunted.js
 Run using
 
 ``` bash
-$ npx server
+$ npx serve
 ```
 
 Inspiration
