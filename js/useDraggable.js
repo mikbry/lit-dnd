@@ -23,11 +23,23 @@ const useDraggable = (onDrop = () => { }) => {
 
   const moveItem = (item, containerY, itemMouseOffset, pageY) => {
     const itemAbsoluteTop = pageY - containerY;
-    item.style.top = `${itemAbsoluteTop - itemMouseOffset}px`;
+    const top = itemAbsoluteTop - itemMouseOffset;
+    item.style.top = `${top}px`;
 
-    const index = Math.max(Math.floor(itemAbsoluteTop / 48), 0);
+    let index = 0;
+    let height = 0;
+    const children = [...item.parentNode.children];
+    children.find((child, ic) => {
+      height += child.offsetHeight;
+      if (top < height - (child.offsetHeight / 2) || ic === children.length - 1) {
+        index = ic;
+        return true;
+      }
+      return false;
+    });
+    // const index = Math.max(Math.floor(itemAbsoluteTop / 48), 0);
     setHoverIndex(index);
-    console.log('move Item', item.style.top, dragged, index);
+    console.log('move Item', item.style.top, dragged, index, height);
   };
 
   const onMoveListener = useCallback((event) => {
