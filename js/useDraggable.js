@@ -17,6 +17,15 @@ const setHoverIndex = (index) => {
   hoverIndex = index;
 };
 
+const getDraggableContainer = (from) => {
+  return from.getRootNode().querySelector('.draggable-container');
+};
+
+const getDraggableItems = (from) => {
+  const children = from.getRootNode().querySelectorAll('.draggable-item');
+  return [...children];
+};
+
 const useDraggable = (onDrop = () => { }, onDrag = () => {}) => {
   const [dragged, setDragged] = useState(null);
 
@@ -27,7 +36,8 @@ const useDraggable = (onDrop = () => { }, onDrag = () => {}) => {
     const absoluteY = pageY - containerY - itemMouseOffset;
     let current = 0;
     let height = 0;
-    const children = [...item.parentNode.children];
+    const children = getDraggableItems(item);
+    console.log('items=', children);
     children.find((child, ic) => {
       height += child.offsetHeight;
       if (absoluteY < height - (child.offsetHeight / 2) || ic === children.length - 1) {
@@ -89,7 +99,7 @@ const useDraggable = (onDrop = () => { }, onDrag = () => {}) => {
     event.preventDefault();
     console.log('startDrag');
     const item = event.target;
-    const parent = item.parentNode;
+    const parent = getDraggableContainer(item);
     const startY = getPageY(event);
     const containerY = parent.getBoundingClientRect().top + window.scrollY;
     const itemMouseOffset = getClientY(event) - item.getBoundingClientRect().top;
