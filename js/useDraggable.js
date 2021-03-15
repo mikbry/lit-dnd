@@ -17,9 +17,7 @@ const setHoverIndex = (index) => {
   hoverIndex = index;
 };
 
-const getDraggableContainer = (from) => {
-  return from.getRootNode().querySelector('.draggable-container');
-};
+const getDraggableContainer = (from) => from.getRootNode().querySelector('.draggable-container');
 
 const getDraggableItems = (from) => {
   const children = from.getRootNode().querySelectorAll('.draggable-item');
@@ -34,7 +32,7 @@ const getDraggableItem = (from) => {
   return item;
 };
 
-const useDraggable = (onDrop = () => { }, onDrag = () => {}) => {
+const useDraggable = (onDrop = () => {}, onDrag = () => {}) => {
   const [dragged, setDragged] = useState(null);
 
   const moveItem = ({ index, item, startY, containerY, itemMouseOffset }, pageY) => {
@@ -45,10 +43,10 @@ const useDraggable = (onDrop = () => { }, onDrag = () => {}) => {
     let current = 0;
     let height = 0;
     const children = getDraggableItems(item);
-    console.log('items=', children);
+    // console.log('draggable items=', children);
     children.find((child, ic) => {
       height += child.offsetHeight;
-      if (absoluteY < height - (child.offsetHeight / 2) || ic === children.length - 1) {
+      if (absoluteY < height - child.offsetHeight / 2 || ic === children.length - 1) {
         current = ic;
         return true;
       }
@@ -67,21 +65,21 @@ const useDraggable = (onDrop = () => { }, onDrag = () => {}) => {
   };
 
   const onUpListener = () => {
-    const { item, index } = dragged;
-    console.log('stop drag', index, hoverIndex);
+    // const { item, index } = dragged;
+    console.log('draggable stop drag'); // index, hoverIndex);
     setDragged(null);
   };
 
   useEffect(() => {
     if (dragged) {
-      console.log('dragged changed', dragged);
+      console.log('draggable dragged changed', dragged);
       dragged.item.style.zIndex = 2;
       document.addEventListener(moveEvent, onMoveListener);
       dragged.item.addEventListener(upEvent, onUpListener);
     }
-    
+
     return () => {
-      console.log('dragged remove', dragged, hoverIndex);
+      console.log('draggable remove', dragged, hoverIndex);
       if (dragged) {
         const { item, index } = dragged;
         document.removeEventListener(moveEvent, onMoveListener);
@@ -91,27 +89,28 @@ const useDraggable = (onDrop = () => { }, onDrag = () => {}) => {
           onDrop(index, hoverIndex);
           setHoverIndex(null);
           item.removeAttribute('style');
-          item.removeEventListener('transitionend', onTransitionEnd)
-        }
-        item.addEventListener('transitionend', onTransitionEnd)
-  
+          item.removeEventListener('transitionend', onTransitionEnd);
+        };
+        item.addEventListener('transitionend', onTransitionEnd);
+
         // TODO real calc
-        const finalTransformY = (hoverIndex - index) * 48
+        const finalTransformY = (hoverIndex - index) * 48;
         item.style.transition = 'transform 0.1s ease-out';
         item.style.transform = `translate3d(0, ${finalTransformY}px, 0)`;
       }
-    }
+    };
   }, [dragged]);
 
   const startDrag = (event) => {
     event.preventDefault();
-    console.log('startDrag');
     const item = getDraggableItem(event.target);
     const parent = getDraggableContainer(item);
+    const children = getDraggableItems(item);
     const startY = getPageY(event);
     const containerY = parent.getBoundingClientRect().top + window.scrollY;
     const itemMouseOffset = getClientY(event) - item.getBoundingClientRect().top;
-    const index = Array.from(parent.children).indexOf(item);
+    const index = children.indexOf(item);
+    console.log('draggable startDrag', parent, item, index);
     const drag = { index, item, startY, containerY, itemMouseOffset };
     setDragged(drag);
     moveItem(drag, getPageY(event));
