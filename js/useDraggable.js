@@ -26,6 +26,14 @@ const getDraggableItems = (from) => {
   return [...children];
 };
 
+const getDraggableItem = (from) => {
+  let item = from;
+  while (item && !item.classList.contains('draggable-item')) {
+    item = item.parentNode;
+  }
+  return item;
+};
+
 const useDraggable = (onDrop = () => { }, onDrag = () => {}) => {
   const [dragged, setDragged] = useState(null);
 
@@ -98,7 +106,7 @@ const useDraggable = (onDrop = () => { }, onDrag = () => {}) => {
   const startDrag = (event) => {
     event.preventDefault();
     console.log('startDrag');
-    const item = event.target;
+    const item = getDraggableItem(event.target);
     const parent = getDraggableContainer(item);
     const startY = getPageY(event);
     const containerY = parent.getBoundingClientRect().top + window.scrollY;
