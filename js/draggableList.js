@@ -23,7 +23,7 @@ const DraggableList = ({ items, onChange }) => {
   };
   const [startDrag] = useDraggable(onDrop, onDrag);
   return html`
-    <div class='${classMap({ 'dragging': !!drag })}'>
+    <div class='draggable-container ${classMap({ 'dragging': !!drag })}'>
       ${repeat(items, (i) => i.id, (i, index) => {
         const classes = {
           nudgedown: drag && index < drag.from && index >= drag.to,
@@ -33,7 +33,7 @@ const DraggableList = ({ items, onChange }) => {
         console.log('dragging', drag);
         return html`
           <div
-            class='item ${classMap(classes)}'
+            class='draggable-item ${classMap(classes)}'
             @mousedown='${startDrag}'
             @touchstart='${startDrag}'>
             ${i.title}

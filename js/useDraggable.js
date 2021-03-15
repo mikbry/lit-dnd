@@ -98,7 +98,6 @@ const useDraggable = (onDrop = () => { }, onDrag = () => {}) => {
     setDragged(drag);
     moveItem(drag, getPageY(event));
   };
-
   return [startDrag];
 };
 

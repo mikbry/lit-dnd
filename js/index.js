@@ -36,7 +36,7 @@ const App = () => {
         display: block;
         position: relative;
       }
-      .item {
+      .draggable-item {
         position: relative;
         height: 48px;
         width: 100%;
@@ -53,16 +53,16 @@ const App = () => {
         background: white;
         font-family: sans-serif;
       }
-      .item.nudgedown:not(.dragged) {
+      .draggable-item.nudgedown:not(.dragged) {
         transform: translate3d(0, 48px, 0);
       }
-      .item.nudgeup:not(.dragged) {
+      .draggable-item.nudgeup:not(.dragged) {
         transform: translate3d(0, -48px, 0);
       }
-      .item.dragged {
+      .draggable-item.dragged {
         box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
       }
-      .dragging > .item:not(.dragged) {
+      .dragging > .draggable-item:not(.dragged) {
         transition: transform 0.2s ease-out;
       }
     </style>
