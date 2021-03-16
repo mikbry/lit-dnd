@@ -69,12 +69,16 @@ const useDraggable = (onDrop = () => {}, onDrag = () => {}) => {
     console.log('draggable stop drag'); // index, hoverIndex);
     setDragged(null);
   };
-
+  const onFocusoutListener = () => {
+    console.log('draggable focus out');
+    setDragged(null);
+  };
   useEffect(() => {
     if (dragged) {
       console.log('draggable dragged changed', dragged);
       dragged.item.style.zIndex = 2;
       document.addEventListener(moveEvent, onMoveListener);
+      document.addEventListener('blur', onFocusoutListener);
       dragged.item.addEventListener(upEvent, onUpListener);
     }
 
@@ -83,6 +87,7 @@ const useDraggable = (onDrop = () => {}, onDrag = () => {}) => {
       if (dragged) {
         const { item, index } = dragged;
         document.removeEventListener(moveEvent, onMoveListener);
+        document.removeEventListener('blur', onFocusoutListener);
         item.removeEventListener(upEvent, onUpListener);
 
         const onTransitionEnd = () => {
